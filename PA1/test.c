@@ -5,8 +5,8 @@
 int main() {
 	int *ptr = (int*) malloc(sizeof(int));
 
-	int x = 25;
-	int y = 30;
+	int x = 15;
+	int y = 50;
 
 	syscall(334, x, y, ptr);
 

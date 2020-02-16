@@ -40,6 +40,7 @@ ssize_t pa2_char_driver_write (struct file *pfile, const char __user *buffer, si
 	/* copy_from_user function: destination is device_buffer and source is the userspace buffer *buffer */
 
 	int max = BUFFER_SIZE - *offset;
+	int bytes_to_write = (max >= length) ? length : max;
 	int bytes_write = bytes_to_write - copy_from_user(device_buffer + *offset, buffer, bytes_to_write);
 	*offset += bytes_write;
 	printk(KERN_ALERT "The device driver wrote %d bytes. The offset is now %d.\n", bytes_write, *offset);
@@ -83,11 +84,12 @@ loff_t pa2_char_driver_seek (struct file *pfile, loff_t offset, int whence)
 	}
 	if (new_offset < 0 || new_offset > BUFFER_SIZE) {
 		printk(KERN_ALERT "ERROR: The offset value described is not within the buffer! No changes made.");
+		return -1;
 	} else {
 		printk(KERN_ALERT "The offset is now %d", new_offset);
 		pfile->f_pos = new_offset;
+		return new_offset;
 	}
-	return 0;
 }
 
 struct file_operations pa2_char_driver_file_operations = {
@@ -124,4 +126,4 @@ static void pa2_char_driver_exit(void)
 /* add module_init and module_exit to point to the corresponding init and exit function*/
 
 module_init(pa2_char_driver_init);
-module_exit(pa2_char_driver_exit) + *offset;
+module_exit(pa2_char_driver_exit);

@@ -4,3 +4,10 @@ PA2/charModule/pa2_character_driver.mod.c
 PA2/charModule/pa2_character_driver.mod.o
 PA2/charModule/modules.order
 PA2/charModule/Module.symvers
+
+PA2/helloModule/Module.symvers
+PA2/helloModule/helloModule.ko
+PA2/helloModule/helloModule.mod.c
+PA2/helloModule/helloModule.mod.o
+PA2/helloModule/helloModule.o
+PA2/helloModule/modules.order

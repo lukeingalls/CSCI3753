@@ -1,5 +1,3 @@
-
-
 #include<linux/init.h>
 #include<linux/module.h>
 
@@ -8,12 +6,10 @@
 #include<linux/uaccess.h>
 
 #define BUFFER_SIZE 1024
-#define DEVICE_NAME "pa2_char_driver"
-#define MAJOR_NUMBER 245
+#define DEVICE_NAME "pa2_character_driver"
+#define MAJOR_NUMBER 241
 
 MODULE_LICENSE("GPL");
-MODULE_AUTHOR("luin3949@colorado.edu");
-
 
 /* Define device_buffer and other global data structures you will need here */
 static char *device_buffer;
@@ -28,7 +24,7 @@ ssize_t pa2_char_driver_read (struct file *pfile, char __user *buffer, size_t le
 	/* copy_to_user function: source is device_buffer and destination is the userspace buffer *buffer */
 	int max = BUFFER_SIZE - *offset;
 	int bytes_to_read = (max >= length) ? length : max;
-	int bytes_read = bytes_to_read - copy_to_user(buffer, device_buffer, bytes_to_read);
+	int bytes_read = bytes_to_read - copy_to_user(buffer, device_buffer + *offset, bytes_to_read);
 	*offset += bytes_read;
 	printk(KERN_ALERT "The device driver read %d bytes. The offset is now %d.\n", bytes_read, *offset);
 	return bytes_read;
@@ -44,10 +40,9 @@ ssize_t pa2_char_driver_write (struct file *pfile, const char __user *buffer, si
 	/* copy_from_user function: destination is device_buffer and source is the userspace buffer *buffer */
 
 	int max = BUFFER_SIZE - *offset;
-	int bytes_to_write = (max >= length) ? length : max;
-	int bytes_write = bytes_to_write - copy_from_user(buffer, device_buffer, bytes_to_write);
+	int bytes_write = bytes_to_write - copy_from_user(device_buffer + *offset, buffer, bytes_to_write);
 	*offset += bytes_write;
-	printk(KERN_ALERT "The device driver read %d bytes. The offset is now %d.\n", bytes_write, *offset);
+	printk(KERN_ALERT "The device driver wrote %d bytes. The offset is now %d.\n", bytes_write, *offset);
 	return bytes_write;
 }
 
@@ -111,8 +106,9 @@ static int pa2_char_driver_init(void)
 	/* print to the log file that the init function is called.*/
 	/* register the device */
 	int result = register_chrdev(MAJOR_NUMBER, DEVICE_NAME, &pa2_char_driver_file_operations);
-	
+	printk(KERN_ALERT "The pa2_character_driver has been initalized!\n");
 	device_buffer = kmalloc(BUFFER_SIZE, GFP_KERNEL);
+	memset(device_buffer, 0, BUFFER_SIZE);
 	return 0;
 }
 
@@ -122,9 +118,10 @@ static void pa2_char_driver_exit(void)
 	/* unregister  the device using the register_chrdev() function. */
 	unregister_chrdev(MAJOR_NUMBER, DEVICE_NAME);
 	kfree(device_buffer);
+	printk(KERN_ALERT "The pa2_character_driver has been uninitalized!\n");
 }
 
 /* add module_init and module_exit to point to the corresponding init and exit function*/
 
 module_init(pa2_char_driver_init);
-module_exit(pa2_char_driver_exit);
+module_exit(pa2_char_driver_exit) + *offset;

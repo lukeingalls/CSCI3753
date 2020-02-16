@@ -2,3 +2,5 @@ PA2/charModule/a.out
 PA2/charModule/pa2_character_driver.ko
 PA2/charModule/pa2_character_driver.mod.c
 PA2/charModule/pa2_character_driver.mod.o
+PA2/charModule/modules.order
+PA2/charModule/Module.symvers

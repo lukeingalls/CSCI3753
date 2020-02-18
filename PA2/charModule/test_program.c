@@ -30,6 +30,9 @@ int main() {
 				buffer = (char*) malloc(length);
 				memset(buffer, 0, length);
 				check = read(file, buffer, length);
+				if (check < length) {
+					printf("Bytes exceed the buffer size. Nothing read.");
+				}
 				printf("Data read from the device:\n%s\n", buffer);
 				free(buffer);
 				break;
@@ -40,6 +43,9 @@ int main() {
 				memset(buffer, 0, BUFFER_SIZE);
 				scanf(" %s", buffer);
 				check = write(file, buffer, strlen(buffer));
+				if (check < length) {
+					printf("Bytes exceed the buffer size. Nothing read.");
+				}
 				free(buffer);
 				break;
 			case 'S':

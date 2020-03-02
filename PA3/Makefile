@@ -1,9 +1,9 @@
 CC=gcc
-CFLAGS=-Wall -Wextra
+CFLAGS=-pthread -Wall -Wextra
 
 
 multi-lookup: application.o util.o
-	$(CC) -o multi-lookup application.o util.o
+	$(CC) $(CFLAGS) -o multi-lookup application.o util.o
 
 clean:
 	rm application.o

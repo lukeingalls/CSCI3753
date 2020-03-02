@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <pthread.h>
+#include <semaphore.h>
 
 #define MAX_INPUT_FILES 10
 #define MAX_RESOLVER_THREADS 10
@@ -10,6 +12,12 @@
 #define MAX_IP_LENGTH 50
 #define MAX_STR_SIZE 50
 
+
+struct THREADS {
+	pthread_t request_threads[10];
+	pthread_t resolve_threads[10];
+};
+
 struct GLOBALS {
 	int num_files;
 	FILE ** file_array;
@@ -17,10 +25,11 @@ struct GLOBALS {
 	int buf_pos;
 	FILE * resolve;
 	FILE * request;
+	struct THREADS thr;
 };
 
-void requester(struct GLOBALS *);
-void resolver(struct GLOBALS *);
+void *requester(void *);
+void *resolver(struct GLOBALS *);
 void clean(struct GLOBALS *);
 
 
@@ -71,9 +80,18 @@ int main(int argc, char *argv[]) {
 		}
 
 		if (request_file && resolve_file) {
+			//Create the request threads
+			for (int i = 0; i < num_request; i++) {
+				if (pthread_create(&g.thr.request_threads[i], NULL, requester, &g)) {
+					fprintf(stderr, "A requester thread failed to open.\n");
+				}
+			}
 
-			requester(&g);
-			resolver(&g);
+			// Wait for requester threads
+			for (int i = 0; i < num_request; i++) {
+				pthread_join(g.thr.request_threads[i], NULL);
+			}
+			// resolver(&g);
 			fclose(request_file);
 			fclose(resolve_file);
 			clean(&g);
@@ -88,7 +106,8 @@ int main(int argc, char *argv[]) {
 
 }
 
-void requester(struct GLOBALS *globals) {
+void *requester(void *g) {
+	struct GLOBALS *globals = (struct GLOBALS *) g;
 	char line[MAX_STR_SIZE];
 	for (int i = 0; i < globals->num_files; i++) {
 		while(fgets(line, MAX_STR_SIZE, globals->file_array[i])) {
@@ -98,20 +117,23 @@ void requester(struct GLOBALS *globals) {
 			fprintf(globals->resolve, "%s\n", line);
 		}
 	}
+
+	return 0;
 }
 
-void resolver(struct GLOBALS *globals) {
+void *resolver(struct GLOBALS *globals) {
 	char ip[MAX_IP_LENGTH];
 	for (int i = globals->buf_pos - 1; i >= 0; i--) {
 		if (dnslookup(globals->buf[i], ip, MAX_IP_LENGTH) == UTIL_FAILURE) {
-			printf("%s\n", globals->buf[i]);
-			fprintf(globals->request, "%s,\n", globals->buf[i]);
+			printf("%s could not be resolved.\n", globals->buf[i]);
+			fprintf(globals->request, ",\n");
 
 		} else {
-			printf("%s,%s\n", globals->buf[i], ip);
 			fprintf(globals->request, "%s,%s\n", globals->buf[i], ip);
 		}
 	}
+
+	return 0;
 }
 
 void clean(struct GLOBALS *globals) {

@@ -18,6 +18,11 @@ struct THREADS {
 	pthread_t resolve_threads[10];
 };
 
+struct MUTEX {
+	sem_t *request_file_output;
+	sem_t *shared_buffer;
+}
+
 struct GLOBALS {
 	int num_files;
 	FILE ** file_array;

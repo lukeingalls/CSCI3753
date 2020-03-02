@@ -73,6 +73,7 @@ int main(int argc, char *argv[]) {
 		if (request_file && resolve_file) {
 
 			requester(&g);
+			resolver(&g);
 			fclose(request_file);
 			fclose(resolve_file);
 			clean(&g);
@@ -95,6 +96,20 @@ void requester(struct GLOBALS *globals) {
 			strncpy(globals->buf[globals->buf_pos], line, MAX_STR_SIZE);
 			globals->buf_pos++;
 			fprintf(globals->resolve, "%s\n", line);
+		}
+	}
+}
+
+void resolver(struct GLOBALS *globals) {
+	char ip[MAX_IP_LENGTH];
+	for (int i = globals->buf_pos - 1; i >= 0; i--) {
+		if (dnslookup(globals->buf[i], ip, MAX_IP_LENGTH) == UTIL_FAILURE) {
+			printf("%s\n", globals->buf[i]);
+			fprintf(globals->request, "%s,\n", globals->buf[i]);
+
+		} else {
+			printf("%s,%s\n", globals->buf[i], ip);
+			fprintf(globals->request, "%s,%s\n", globals->buf[i], ip);
 		}
 	}
 }

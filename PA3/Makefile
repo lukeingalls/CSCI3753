@@ -6,8 +6,9 @@ multi-lookup: application.o util.o
 	$(CC) $(CFLAGS) -o multi-lookup application.o util.o
 
 clean:
-	rm application.o
-	rm util.o
+	rm *.o
+	rm *.txt
+	rm multi-lookup
 	clear
 
 test:

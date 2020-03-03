@@ -81,8 +81,8 @@ int main(int argc, char *argv[]) {
 		
 		// Each of these strings will be used to hold the file names of the requester of resolver thread
 		// The FILE objects will hold the actual file structure.
-		char * request_log = argv[3];
-		char * resolve_log = argv[4];
+		char * request_log = argv[4];
+		char * resolve_log = argv[3];
 		FILE *request_file;
 		FILE *resolve_file;
 
@@ -199,7 +199,7 @@ void *requester(void *g) {
 
 	// Lock the file as we write to it
 	pthread_mutex_lock(&(globals->muts.mut_resolve));
-	fprintf(globals->resolve, "Thread <%d> serviced %d files\n", threadid, counter);
+	fprintf(globals->request, "Thread <%d> serviced %d files\n", threadid, counter);
 	pthread_mutex_unlock(&(globals->muts.mut_resolve));
 	return 0;
 }
@@ -219,11 +219,11 @@ void *resolver(void * g) {
 		if (dnslookup(temp, ip, MAX_IP_LENGTH) == UTIL_FAILURE) {
 			printf("%s coud not be resolved.\n", temp);
 			pthread_mutex_lock(&(globals->muts.mut_resolve));
-			fprintf(globals->request, ",\n");
+			fprintf(globals->resolve, ",\n");
 			pthread_mutex_unlock(&(globals->muts.mut_resolve));
 		} else {
 			pthread_mutex_lock(&(globals->muts.mut_resolve));
-			fprintf(globals->request, "%s,%s\n", temp, ip);
+			fprintf(globals->resolve, "%s,%s\n", temp, ip);
 			pthread_mutex_unlock(&(globals->muts.mut_resolve));
 		}
 

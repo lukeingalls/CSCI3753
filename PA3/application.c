@@ -19,9 +19,12 @@ struct THREADS {
 };
 
 struct MUTEX {
-	sem_t *request_file_output;
-	sem_t *shared_buffer;
-}
+	pthread_mutex_t mut_buf;
+	pthread_mutex_t mut_input[10];
+	pthread_mutex_t mut_request;
+	pthread_mutex_t mut_resolve;
+
+};
 
 struct GLOBALS {
 	int num_files;
@@ -31,6 +34,7 @@ struct GLOBALS {
 	FILE * resolve;
 	FILE * request;
 	struct THREADS thr;
+	struct MUTEX muts;
 };
 
 void *requester(void *);
@@ -43,6 +47,14 @@ int main(int argc, char *argv[]) {
 		struct GLOBALS g;
 		// Define the initial buf_pos
 		g.buf_pos = 0;
+
+		//Create mutexes
+		pthread_mutex_init(&g.muts.mut_buf, NULL);
+		for (int i = 0; i < 10; i++) {
+			pthread_mutex_init(&g.muts.mut_input[i], NULL);
+		}
+		pthread_mutex_init(&g.muts.mut_request, NULL);
+		pthread_mutex_init(&g.muts.mut_resolve, NULL);
 
 		int num_request = atoi(argv[1]);
 		int num_resolve = atoi(argv[2]);
@@ -75,7 +87,7 @@ int main(int argc, char *argv[]) {
 		
 		// Define the number of files and pass them to the globals struct
 		g.num_files = num_input_files;
-		g.file_array = (FILE *) malloc(sizeof(FILE *) * num_input_files);
+		g.file_array = (FILE **) malloc(sizeof(FILE *) * num_input_files);
 		for (int i = 0; i < num_input_files; i++) {
 			FILE * temp_file = fopen(argv[i + 5], "r");
 			if (temp_file) 

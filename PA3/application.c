@@ -24,6 +24,8 @@ struct MUTEX {
 	pthread_mutex_t mut_input[MAX_INPUT_FILES];
 	pthread_mutex_t mut_request;
 	pthread_mutex_t mut_resolve;
+	pthread_cond_t cond_request;
+	pthread_cond_t cond_resolve;
 
 };
 
@@ -60,6 +62,9 @@ int main(int argc, char *argv[]) {
 		}
 		check_tex |= pthread_mutex_init(&g.muts.mut_request, NULL);
 		check_tex |= pthread_mutex_init(&g.muts.mut_resolve, NULL);
+
+		pthread_cond_init(&g.muts.cond_request, NULL);
+		pthread_cond_init(&g.muts.cond_resolve, NULL);
 
 		if (check_tex) {
 			fprintf(stderr, "One of the mutexes failed to initialize. Aborting.\n");
@@ -170,8 +175,13 @@ void *requester(void *g) {
 			
 			// Lock the file we are reading from (or sleep)
 			pthread_mutex_lock(&(globals->muts.mut_input[i]));
+			
+			while(globals->buf_pos == BUFFER_SIZE)
+				pthread_cond_wait(&(globals->muts.cond_request), &(globals->muts.mut_input[i]));
+
 			if (fgets(line, MAX_STR_SIZE, globals->file_array[i])) {
 				// Unlock file being read
+				pthread_cond_signal(&(globals->muts.cond_resolve));
 				pthread_mutex_unlock(&(globals->muts.mut_input[i]));
 			
 
@@ -211,8 +221,12 @@ void *resolver(void * g) {
 
 	pthread_mutex_lock(&(globals->muts.mut_buf));
 	while (!all_files_read(globals->file_status, globals->num_files) || globals->buf_pos > 0) {
+		while (globals->buf_pos == 0)
+			pthread_cond_wait(&(globals->muts.cond_resolve), &(globals->muts.mut_buf));
+
 		strncpy(temp, globals->buf[globals->buf_pos - 1], MAX_STR_SIZE);
 		globals->buf_pos--;
+		pthread_cond_signal(&(globals->muts.cond_request));
 		pthread_mutex_unlock(&(globals->muts.mut_buf));
 
 
@@ -245,6 +259,9 @@ void clean(struct GLOBALS *globals) {
 
 	fclose(globals->request);
 	fclose(globals->resolve);
+
+	pthread_cond_destroy(&(globals->muts.cond_request));
+	pthread_cond_destroy(&(globals->muts.cond_resolve));
 
 	for (int i = 0; i < globals->num_files; i++) {
 		fclose(globals->file_array[i]);

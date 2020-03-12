@@ -1,53 +1,19 @@
 #include "util.h"
+#include "./application.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/syscall.h>
-
-#define MAX_INPUT_FILES 10
-#define MAX_RESOLVER_THREADS 10
-#define MAX_REQUESTER_THREADS 5
-#define MAX_NAME_LENGTH 1025
-#define MAX_IP_LENGTH 50
-#define MAX_STR_SIZE 50
-#define BUFFER_SIZE 1000
-
-struct THREADS {
-	pthread_t request_threads[MAX_REQUESTER_THREADS];
-	pthread_t resolve_threads[MAX_RESOLVER_THREADS];
-};
-
-struct MUTEX {
-	pthread_mutex_t mut_buf;
-	pthread_mutex_t mut_input[MAX_INPUT_FILES];
-	pthread_mutex_t mut_request;
-	pthread_mutex_t mut_resolve;
-	pthread_cond_t cond_request;
-	pthread_cond_t cond_resolve;
-
-};
-
-struct GLOBALS {
-	int num_files;
-	FILE *file_array[MAX_INPUT_FILES];
-	char file_status[MAX_INPUT_FILES];
-	char buf[BUFFER_SIZE][MAX_STR_SIZE];
-	int buf_pos;
-	FILE * resolve;
-	FILE * request;
-	struct THREADS thr;
-	struct MUTEX muts;
-};
-
-void *requester(void *);
-void *resolver(void *);
-void clean(struct GLOBALS *);
-char all_files_read(char * files, int len);
-
+#include <sys/time.h>
 
 int main(int argc, char *argv[]) {
+	struct timeval start;
+	struct timeval end;
+
+	gettimeofday(&start, NULL);
+
 	if (argc >= 6) {
 		struct GLOBALS g;
 		// Define the initial buf_pos
@@ -86,8 +52,8 @@ int main(int argc, char *argv[]) {
 		
 		// Each of these strings will be used to hold the file names of the requester of resolver thread
 		// The FILE objects will hold the actual file structure.
-		char * request_log = argv[4];
-		char * resolve_log = argv[3];
+		char * request_log = argv[3];
+		char * resolve_log = argv[4];
 		FILE *request_file;
 		FILE *resolve_file;
 
@@ -139,7 +105,8 @@ int main(int argc, char *argv[]) {
 			for (int i = 0; i < num_resolve; i++) {
 				pthread_join(g.thr.resolve_threads[i], NULL);
 			}
-
+			gettimeofday(&end, NULL);
+			printf("Program ran in %ld microseconds\n", (((end.tv_sec * 1000000) + end.tv_usec) - ((start.tv_sec * 1000000) + start.tv_usec)));
 			// Clean up everything
 			clean(&g);
 		} else {
@@ -150,7 +117,7 @@ int main(int argc, char *argv[]) {
 	} else {
 		fprintf(stderr, "Not enough command line args\n");
 	}
-
+	return 0;
 }
 
 void *requester(void *g) {
@@ -209,7 +176,7 @@ void *requester(void *g) {
 
 	// Lock the file as we write to it
 	pthread_mutex_lock(&(globals->muts.mut_resolve));
-	fprintf(globals->request, "Thread <%d> serviced %d files\n", threadid, counter);
+	fprintf(globals->request, "Thread <%d> serviced %d files.\n", threadid, counter);
 	pthread_mutex_unlock(&(globals->muts.mut_resolve));
 	return 0;
 }

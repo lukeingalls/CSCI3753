@@ -2,7 +2,7 @@ CC=gcc
 CFLAGS=-pthread -Wall -Wextra
 
 
-multi-lookup: application.o util.o
+multi-lookup: application.o util.o application.h
 	$(CC) $(CFLAGS) -o multi-lookup application.o util.o
 
 clean:

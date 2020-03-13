@@ -75,6 +75,7 @@ int main(int argc, char *argv[]) {
 			else
 				continue;
 		}
+		g.start_pos = 0;
 
 		// Set all files to unread
 		for (int i = 0; i < 10; i++) {
@@ -132,7 +133,12 @@ void *requester(void *g) {
 	// for (; j < MAX_INPUT_FILES; j++) if ( (unsigned int)threadid == (unsigned int) globals->thr.request_threads[j]) printf("match\n");
 
 	// Num_files doesn't change and thus is thread safe.
-	for (int i = 0; i < globals->num_files; i++) {
+	pthread_mutex_lock(&(globals->muts.mut_buf));
+	int i = globals->start_pos;
+	globals->start_pos++;
+	pthread_mutex_unlock(&(globals->muts.mut_buf));
+
+	for (; i < globals->num_files; i++) {
 		if (globals->file_status[i]) {
 			continue;
 		}
@@ -200,7 +206,7 @@ void *resolver(void * g) {
 		if (dnslookup(temp, ip, MAX_IP_LENGTH) == UTIL_FAILURE) {
 			printf("%s coud not be resolved.\n", temp);
 			pthread_mutex_lock(&(globals->muts.mut_resolve));
-			fprintf(globals->resolve, ",\n");
+			fprintf(globals->resolve, "%s,\n", temp);
 			pthread_mutex_unlock(&(globals->muts.mut_resolve));
 		} else {
 			pthread_mutex_lock(&(globals->muts.mut_resolve));

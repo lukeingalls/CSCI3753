@@ -1,0 +1,58 @@
+_____________________________________________________
+
+Number of requester thread = 1
+Number of resolver thread = 1
+Total run time: 39.066239 seconds
+
+Thread <17310> serviced 5 files.
+_____________________________________________________
+
+Number of requester thread = 1
+Number of resolver thread = 3
+Total run time: 25.329297 seconds
+
+Thread <17347> serviced 5 files.
+_____________________________________________________
+
+Number of requester thread = 3
+Number of resolver thread = 1
+Total run time: 40.976574 seconds
+
+Thread <17379> serviced 5 files.
+Thread <17380> serviced 0 files.
+Thread <17381> serviced 0 files.
+_____________________________________________________
+
+Number of requester thread = 3
+Number of resolver thread = 3
+Total run time: 25.475947 seconds
+
+Thread <17408> serviced 4 files.
+Thread <17407> serviced 3 files.
+Thread <17409> serviced 1 files.
+_____________________________________________________
+
+Number of requester thread = 5
+Number of resolver thread = 5
+Total run time: 25.365508 seconds
+
+Thread <17429> serviced 1 files.
+Thread <17428> serviced 4 files.
+Thread <17431> serviced 2 files.
+Thread <17430> serviced 2 files.
+Thread <17432> serviced 2 files.
+_____________________________________________________
+
+Number of requester thread = 5
+Number of resolver thread = 8
+Total run time: 25.181381 seconds
+
+Thread <17464> serviced 3 files.
+Thread <17463> serviced 1 files.
+Thread <17462> serviced 2 files.
+Thread <17466> serviced 0 files.
+Thread <17465> serviced 0 files.
+_____________________________________________________
+
+
+This behaviour is to be expected since the limit on preformance lies in the resolver threads. Additional requester threads don't help as the file reading can happen relatively quickly and at a certain point context switches may be a down side. There is slight unfairness in the way requesters access the files but this is expected because of my implementation.

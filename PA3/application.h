@@ -4,7 +4,7 @@
 #define MAX_NAME_LENGTH 1025
 #define MAX_IP_LENGTH 50
 #define MAX_STR_SIZE 50
-#define BUFFER_SIZE 20
+#define BUFFER_SIZE 1000
 
 struct THREADS {
 	pthread_t request_threads[MAX_REQUESTER_THREADS];
@@ -31,6 +31,7 @@ struct GLOBALS {
 	FILE * request;
 	struct THREADS thr;
 	struct MUTEX muts;
+	int start_pos;
 };
 
 void *requester(void *);

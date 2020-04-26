@@ -1,0 +1,99 @@
+Arch 1 eliminated for proc 19 on criteria 3 to 10, 0.000000
+Arch 2 eliminated for proc 19 on criteria 3 to 10, 0.000000
+Arch 3 eliminated for proc 19 on criteria 3 to 10, 0.000000
+Arch 1 eliminated for proc 2 on criteria 3 to 0, 0.000000
+Arch 3 eliminated for proc 2 on criteria 3 to 0, 0.000000
+Arch 1 eliminated for proc 3 on criteria 3 to 0, 0.000000
+Arch 3 eliminated for proc 3 on criteria 3 to 0, 0.000000
+Arch 1 eliminated for proc 13 on criteria 3 to 0, 0.000000
+Arch 3 eliminated for proc 13 on criteria 3 to 0, 0.000000
+Arch 1 eliminated for proc 18 on criteria 3 to 0, 0.000000
+Arch 3 eliminated for proc 18 on criteria 3 to 0, 0.000000
+Arch 1 eliminated for proc 4 on criteria 8 to 0, 0.000000
+Arch 2 eliminated for proc 0 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 0 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 1 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 1 on criteria 8 to 9, 0.000000
+Arch 1 eliminated for proc 6 on criteria 8 to 0, 0.000000
+Arch 1 eliminated for proc 8 on criteria 8 to 0, 0.000000
+Arch 1 eliminated for proc 11 on criteria 8 to 0, 0.000000
+Arch 1 eliminated for proc 12 on criteria 8 to 0, 0.000000
+Arch 1 eliminated for proc 15 on criteria 8 to 0, 0.000000
+Arch 2 eliminated for proc 5 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 5 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 7 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 7 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 9 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 9 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 10 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 10 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 14 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 14 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 16 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 16 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 17 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 17 on criteria 8 to 9, 0.000000
+Arch 1 eliminated for proc 0 on criteria 11 to 0, 0.000000
+Arch 1 eliminated for proc 1 on criteria 11 to 0, 0.000000
+Arch 1 eliminated for proc 10 on criteria 13 to 14, 0.000000
+Arch 1 eliminated for proc 14 on criteria 13 to 14, 0.000000
+Arch 1 eliminated for proc 16 on criteria 13 to 14, 0.000000
+Arch 2 eliminated for proc 18 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 3 on criteria 3 to 10, 0.000000
+Arch 2 eliminated for proc 2 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 12 on criteria 3 to 10, 0.000000
+Arch 3 eliminated for proc 12 on criteria 3 to 10, 0.000000
+Arch 2 eliminated for proc 13 on criteria 8 to 9, 0.000000
+Arch 2 eliminated for proc 4 on criteria 8 to 9, 0.000000
+Arch 3 eliminated for proc 4 on criteria 8 to 9, 0.000000
+
+ output.csvfile createdProc 8 eliminates Arch 1 on criteria 3 to 10
+Proc 8 eliminates Arch 2 on criteria 3 to 10
+Proc 8 eliminates Arch 3 on criteria 3 to 10
+Proc 11 eliminates Arch 1 on criteria 3 to 10
+Proc 11 eliminates Arch 2 on criteria 3 to 10
+Proc 11 eliminates Arch 3 on criteria 3 to 10
+Proc 16 eliminates Arch 1 on criteria 3 to 10
+Proc 16 eliminates Arch 2 on criteria 3 to 10
+Proc 16 eliminates Arch 3 on criteria 3 to 10
+Proc 12 eliminates Arch 1 on criteria 3 to 0
+Proc 12 eliminates Arch 3 on criteria 3 to 0
+Proc 13 eliminates Arch 1 on criteria 3 to 0
+Proc 13 eliminates Arch 3 on criteria 3 to 0
+Proc 15 eliminates Arch 1 on criteria 3 to 0
+Proc 15 eliminates Arch 3 on criteria 3 to 0
+Proc 3 eliminates Arch 1 on criteria 8 to 0
+Proc 4 eliminates Arch 1 on criteria 8 to 0
+Proc 0 eliminates Arch 2 on criteria 8 to 9
+Proc 0 eliminates Arch 3 on criteria 8 to 9
+Proc 5 eliminates Arch 2 on criteria 8 to 9
+Proc 5 eliminates Arch 3 on criteria 8 to 9
+Proc 7 eliminates Arch 1 on criteria 8 to 0
+Proc 10 eliminates Arch 1 on criteria 8 to 0
+Proc 18 eliminates Arch 1 on criteria 8 to 0
+Proc 19 eliminates Arch 1 on criteria 8 to 0
+Proc 1 eliminates Arch 2 on criteria 8 to 9
+Proc 1 eliminates Arch 3 on criteria 8 to 9
+Proc 2 eliminates Arch 2 on criteria 8 to 9
+Proc 2 eliminates Arch 3 on criteria 8 to 9
+Proc 6 eliminates Arch 2 on criteria 8 to 9
+Proc 6 eliminates Arch 3 on criteria 8 to 9
+Proc 9 eliminates Arch 2 on criteria 8 to 9
+Proc 9 eliminates Arch 3 on criteria 8 to 9
+Proc 14 eliminates Arch 2 on criteria 8 to 9
+Proc 14 eliminates Arch 3 on criteria 8 to 9
+Proc 17 eliminates Arch 2 on criteria 8 to 9
+Proc 17 eliminates Arch 3 on criteria 8 to 9
+Proc 5 eliminates Arch 1 on criteria 11 to 0
+Proc 0 eliminates Arch 1 on criteria 13 to 14
+Proc 1 eliminates Arch 1 on criteria 13 to 14
+Proc 2 eliminates Arch 1 on criteria 13 to 14
+Proc 15 eliminates Arch 2 on criteria 3 to 10
+Proc 12 eliminates Arch 2 on criteria 8 to 9
+Proc 13 eliminates Arch 2 on criteria 8 to 9
+Proc 4 eliminates Arch 2 on criteria 3 to 10
+Proc 4 eliminates Arch 3 on criteria 3 to 10
+Proc 3 eliminates Arch 2 on criteria 8 to 9
+Proc 3 eliminates Arch 3 on criteria 8 to 9
+
+ output.csvfile created

@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
 	struct timeval end;
 
 	gettimeofday(&start, NULL);
-
+ 
 	if (argc >= 6) {
 		struct GLOBALS g;
 		// Define the initial buf_pos

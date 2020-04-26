@@ -31,88 +31,150 @@ int lru_replace(Pentry q[MAXPROCESSES], int timestamps[MAXPROCESSES][MAXPROCPAGE
     return swap_page;
 }
 
+void swap(int *l, int *r){
+    int ptr = *l;
+    *l = *r;
+    *r = ptr;
+}
+
 void pageit(Pentry q[MAXPROCESSES]) { 
     
-    /* This file contains the stub for an LRU pager */
+    /* This file contains the stub for a predictive pager */
     /* You may need to add/remove/modify any part of this file */
 
-    /* Static vars */
+    /* static vars */
+    /* givens */
     static int initialized = 0;
     static int tick = 1; // artificial time
-    static int timestamps[MAXPROCESSES][MAXPROCPAGES];
-    static int prev_page[MAXPROCESSES];
-    static int frequency[MAXPROCESSES][MAXPROCPAGES];
-    static int transition[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
+    /* created */
+    static int prev_pc[MAXPROCESSES]; /* lalst used process process counter */
+    static int timestamps[MAXPROCESSES][MAXPROCPAGES]; /* time stamp for pages and procs */
+    /* use the page timestamps, number, and frequency~ to determine when it should be paged out. */
+    /* use 3d array so each element has something else it is pointing to for another flow patern */
+    static int *CTRL_FLOW_timestamps[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
+    static int flow_page[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
+    static int proc_transitions[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
     /* Local vars */
-    int proc_iter; //variable used for process number in intialization of timestamps
-    int page_iter; //sames as proc_iter but for pages
-    int proc;
-    int pc;
-    int page;
-    int swap_page;
-    float min_freq;
-    int next_page;
+    /* we were given none :c */
+    /* so like with the 3ed array we need to determine it for bekadys algorithm.*/
+    int **PRED_timestamps;
+    int *PRED_PG_NUM;
+    int *PRED_FREQ;
 
-    /* initialize static vars on first run */
+    /* local vars to determine lru and last/current page loc */
+    int proc;
+    int curr_page;
+    int prev_page = 0;
+    int NUM_PG_FILLED;
+    int forw_page;
+    int i, j, k;
+
+    /* like in the lru, initialized the static vars */
     if(!initialized){
-        for(proc_iter=0; proc_iter < MAXPROCESSES; proc_iter++){
-            prev_page[proc_iter] = 0;
-            for(page_iter=0; page_iter < MAXPROCPAGES; page_iter++){
-                timestamps[proc_iter][page_iter] = 0; 
-                frequency[proc_iter][page_iter] = 0;
-                for (proc = 0; proc < MAXPROCPAGES; proc++) { 
-                    transition[proc_iter][proc][page_iter] = 1;
-                }
+        /* initialized the cmplx vars */
+        for(i = 0; i < MAXPROCESSES; i++){
+            for(j = 0; j < MAXPROCESSES; j++){
+                for(k = 0; k < MAXPROCESSES; k++){
+                    /* loop through elems in 3D array */
+                    proc_transitions[i][j][k] = -1;
+                    flow_page[i][j][k] = -1;
+                    CTRL_FLOW_timestamps[i][j][k] = NULL;
+                } /* end for */
+            } /* end for */
+        } /* end for */
+        for(proc = 0; proc < MAXPROCESSES; proc++){
+            for(i = 0; i < MAXPROCPAGES; i++){
+                timestamps[proc][i] = 0;
             }
         }
+        /* after its finished, its fully initialized */
         initialized = 1;
     }
     
-    /* TODO: Implement LRU Paging */
-    for(proc=0; proc<MAXPROCESSES; proc++) { 
-        // Identify Active Processes
-        if(q[proc].active) {
-            // Page data
-            pc = q[proc].pc;
-            page = pc/PAGESIZE;
+    /* TODO: Implement Predictive Paging */
+    /* going to udate the ctrl flow for each process */
+    for(proc = 0; proc < MAXPROCESSES; proc++){
+        if(q[proc].active){
+            prev_page = prev_pc[proc] / PAGESIZE;
+            prev_pc[proc] = q[proc].pc;
+            curr_page = q[proc].pc / PAGESIZE;
 
-            if (prev_page[proc] != page) {
-                transition[proc][prev_page[proc]][page] += 1;
-                prev_page[proc] = page;
+            timestamps[proc][curr_page] = tick;
 
-            }
-            timestamps[proc][page] = tick; // Update actively used pages
-            frequency[proc][page] += 1;
-            /* Check Page Status and swap in if necessary*/
-            if(!q[proc].pages[page]) {
-                if (!pagein(proc,page)) {    
-                    min_freq = ~(-1 << 31);      
-                        for(page_iter = 0; page_iter < MAXPROCPAGES; page_iter++){
-
-                            if(q[proc].pages[page_iter] && min_freq > timestamps[proc][page_iter]*transition[proc][prev_page[proc]][page_iter]){
-                                swap_page = page_iter;
-                                min_freq = timestamps[proc][page_iter]*transition[proc][prev_page[proc]][page_iter];
-                            }
-                        }
-                    // evict that oldest page.
-                    pageout(proc,swap_page);
-
-                } else {
-                    pagein(proc, page + 1);
-                }
-            }
-            prev_page[proc] = page;
-        } else {
-            pc = q[proc].pc;
-            page = pc/PAGESIZE;
-            for (page_iter = 0; page_iter < MAXPROCPAGES; page_iter++) {
-                if (q[proc].pages[page_iter]) {
-                    if (page_iter != page && page_iter != page + 1) {
-                        pageout(proc, swap_page);
+            if(curr_page != prev_page){
+                pageout(proc, prev_page);
+                /* for throughout the proc last page */
+                for(i = 0; i < MAXPROCPAGES; i ++){
+                    /* the magic of belady */
+                    if(curr_page == flow_page[proc][prev_page][i]){
+                        /* the freq goe up */
+                        proc_transitions[proc][prev_page][i]++;
+                        break;
+                    } /* end if */
+                    if(flow_page[proc][prev_page][i] == -1){
+                        proc_transitions[proc][prev_page][i] = 1;
+                        flow_page[proc][prev_page][i] = curr_page;
+                        CTRL_FLOW_timestamps[proc][prev_page][i] = &(timestamps[proc][i]);
+                        break;
                     }
                 }
             }
         }
-    } 
+    }
+
+    /* active process page swap */
+    for(proc = 0; proc < MAXPROCESSES; proc++) {
+        
+        if(q[proc].active){
+
+            curr_page = (q[proc].pc) / PAGESIZE;
+            if(!q[proc].pages[curr_page]) {
+                pagein(proc, curr_page);
+            }
+        } else {
+            // Get rid of inactive pages
+            for(curr_page = 0; curr_page < MAXPROCPAGES; curr_page++){
+                pageout(proc, curr_page);
+            }
+        }
+    }
+
+    for(proc = 0; proc < MAXPROCESSES; proc++){
+        if(q[proc].active){
+            /* learning algorithm */
+            NUM_PG_FILLED = 0;
+
+            // What page will we be on after swap?
+            forw_page = (q[proc].pc + PAGEWAIT + 1) / PAGESIZE;
+
+            PRED_timestamps = CTRL_FLOW_timestamps[proc][forw_page];
+            PRED_FREQ = proc_transitions[proc][forw_page];
+            PRED_PG_NUM = flow_page[proc][forw_page];
+            /* look for empty pages and if not inc the num o filled pages. eleminate seg faults & pg faults */
+            for(i = 0; i < MAXPROCPAGES; i++){
+                if((NUM_PG_FILLED < MAXPROCPAGES) && (PRED_PG_NUM[NUM_PG_FILLED] != -1)){
+                    NUM_PG_FILLED++;
+                }
+            }
+            /* go until the t is less than tehe cur t, swhap bc beladys */
+            for(i = 0; i < MAXPROCPAGES; i++){
+                for(j = 1; j < NUM_PG_FILLED; j++){
+                    if((*PRED_timestamps[j]) > (*PRED_timestamps[j - 1])){
+                        if((PRED_FREQ[j]) > (PRED_FREQ[j - 1])){
+                            swap(PRED_PG_NUM + (j - 1), PRED_PG_NUM + j);
+                            swap(*PRED_timestamps + (j - 1), *PRED_timestamps + j);
+                            swap(PRED_FREQ + (j - 1), PRED_FREQ + j);
+                        }
+                    }
+                }
+            }
+            /* its all sorted ptimally so we swap in*/
+            for(i = 0; i < NUM_PG_FILLED; i++){
+                pagein(proc, PRED_PG_NUM[i]);
+            }
+        }
+    }
+
+
     tick++;
-} 
+}

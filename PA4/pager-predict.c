@@ -97,6 +97,8 @@ void pageit(Pentry q[MAXPROCESSES]) {
                     // evict that oldest page.
                     pageout(proc,swap_page);
 
+                } else {
+                    pagein(proc, page + 1);
                 }
             }
             prev_page[proc] = page;

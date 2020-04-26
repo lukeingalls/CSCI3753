@@ -53,29 +53,6 @@ static long procs=MAXPROCESSES;
 #define DIE(reason)   die((reason),__FILE__,__LINE__)
 #define CARP(reason) carp((reason),__FILE__,__LINE__)
 
-void csv(int data[][MAXPROCPAGES][MAXPROCPAGES]){
-
-    char * filename = "output.csv";
-    FILE *fp;
-    int proc,i,j;
-
-    fp=fopen(filename,"w+");
-
-    for(proc=0;proc<MAXPROCESSES;proc++){
-        for(i=0;i<MAXPROCPAGES; i++) {
-            for(j=0;j<MAXPROCPAGES;j++) {
-
-                fprintf(fp,"%d, ",data[proc][i][j]);
-
-            }
-            fprintf(fp, "\n");
-        }
-        fprintf(fp, "\n");
-    }
-    fclose(fp);
-
-    printf("\n %sfile created",filename);
-}
 
 // always print the result of a test
 inline void check(int boolean, char *boolstr, char *file, int line) { 
@@ -859,7 +836,6 @@ int main(int argc, char **argv) {
 	allblocked();    // deadlock detection 
     } 
     allscore(); 
-    csv(transition);
     return EXIT_SUCCESS;
 
 } 

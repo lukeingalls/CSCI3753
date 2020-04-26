@@ -25,9 +25,6 @@
 #define PHYSICALPAGES 100	/* number of available physical pages */ 
 #define MAXPC (MAXPROCPAGES*PAGESIZE) /* largest PC value */ 
 
-int transition[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
-void csv(int data[][MAXPROCPAGES][MAXPROCPAGES]);
-
 struct pentry {
     long active; 
     long pc; 

@@ -18,78 +18,18 @@
 
 #include "simulator.h"
 
+int lru_replace(Pentry q[MAXPROCESSES], int timestamps[MAXPROCESSES][MAXPROCPAGES], int tick, int proc) {
+    int min_time = tick;  
+    int swap_page;    
+    for(int page_iter = 0; page_iter < MAXPROCPAGES; page_iter++){
 
-double archs[][MAXPROCPAGES][MAXPROCPAGES] = {
-    {
-        {0, 13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  13.0/1151.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  207.0/1151.0,   0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  207.0/1151.0,   0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  207.0/1151.0,   0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  207.0/1151.0,   0,  0,  0,  0,  0,  0},
-        {12.0/1151.0,   0,  0,  0,  0,  0,  0,  0,  0,  194.0/1151.0,   0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}
-    },
-    {
-        {0, 51.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  51.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  51.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {20.0/558.0,    0,  0,  0,  31.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  31.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  31/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  31.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  31.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {30.0/558.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}
-    },
-    {
-        {0, 45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0,    0,  0,  0,  45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  45.0/558.0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {44.0/558.0,    0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0},
-        {0, 0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0}
+        if(q[proc].pages[page_iter] && min_time > timestamps[proc][page_iter]){
+            swap_page = page_iter;
+            min_time = timestamps[proc][page_iter];
+        }
     }
-};
-
-// int transition[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
-
+    return swap_page;
+}
 
 void pageit(Pentry q[MAXPROCESSES]) { 
     
@@ -100,9 +40,9 @@ void pageit(Pentry q[MAXPROCESSES]) {
     static int initialized = 0;
     static int tick = 1; // artificial time
     static int timestamps[MAXPROCESSES][MAXPROCPAGES];
-    // static int transition[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
     static int prev_page[MAXPROCESSES];
-    static int arch_track[MAXPROCESSES][3];
+    static int frequency[MAXPROCESSES][MAXPROCPAGES];
+    static int transition[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
     /* Local vars */
     int proc_iter; //variable used for process number in intialization of timestamps
     int page_iter; //sames as proc_iter but for pages
@@ -110,23 +50,19 @@ void pageit(Pentry q[MAXPROCESSES]) {
     int pc;
     int page;
     int swap_page;
-    int min_time;
-    int iterator;
-    int accum_iter;
-    float accum[MAXPROCPAGES];
-    int max_accum;
+    float min_freq;
+    int next_page;
 
     /* initialize static vars on first run */
     if(!initialized){
         for(proc_iter=0; proc_iter < MAXPROCESSES; proc_iter++){
             prev_page[proc_iter] = 0;
             for(page_iter=0; page_iter < MAXPROCPAGES; page_iter++){
-              timestamps[proc_iter][page_iter] = 0; 
-              for (proc = 0; proc < MAXPROCPAGES; proc++)
-              transition[proc_iter][proc][page_iter] = 0;
-            }
-            for (iterator = 0; iterator < 3; iterator++) {
-                arch_track[proc_iter][iterator] = 1;
+                timestamps[proc_iter][page_iter] = 0; 
+                frequency[proc_iter][page_iter] = 0;
+                for (proc = 0; proc < MAXPROCPAGES; proc++) { 
+                    transition[proc_iter][proc][page_iter] = 1;
+                }
             }
         }
         initialized = 1;
@@ -140,65 +76,38 @@ void pageit(Pentry q[MAXPROCESSES]) {
             pc = q[proc].pc;
             page = pc/PAGESIZE;
 
-            timestamps[proc][page] = tick; // Update actively used pages
-            if (page - prev_page[proc] != 1 && page - prev_page[proc] != 0) {
-                // printf("JUMP! %d, PROCESS %d\n", page - prev_page[proc], proc);
-            }
             if (prev_page[proc] != page) {
-                for (iterator = 0; iterator < 3; iterator++) {
-                    if (arch_track[proc][iterator]) {
-                        if (archs[iterator][prev_page[proc]][page] == (float)0) {
-                            arch_track[proc][iterator] = 0;
-                            printf("Proc %d eliminates Arch %d on criteria %d to %d\n", proc, iterator + 1, prev_page[proc], page);
-                        }
-                        for (accum_iter = 0; accum_iter < q[proc].npages; accum_iter++) {
-
-                            if (accum_iter == 0 && archs[iterator][proc][accum_iter] == 0) {
-                                accum[accum_iter] = 0;
-                            } else {
-                                accum[accum_iter] = accum[accum_iter] + archs[iterator][proc][accum_iter];
-                            }
-                        }
-                    }
-                }
-                max_accum = 0;
-                for (accum_iter = 1; accum_iter < q[proc].npages; accum_iter++) {
-                    if (accum[accum_iter] > accum[max_accum]) max_accum = accum_iter;
-                }
                 transition[proc][prev_page[proc]][page] += 1;
-                if(!q[proc].pages[max_accum]) {
-                    if (!pagein(proc,max_accum)) {    
-                        min_time = 0;      
-                            for(page_iter = max_accum - 2; page_iter >= 0; page_iter--){
-                                if(q[proc].pages[page_iter]){
-                                    pageout(proc,page_iter);
-                                    min_time = 1;
-                                    break;
-                                }
-                            }
-                            for(page_iter = MAXPROCPAGES - 1; page_iter > max_accum && !min_time; page_iter--){
-                                if(q[proc].pages[page_iter]){
-                                    pageout(proc,page_iter);
-                                    break;
-                                }
-                            }
-                    }
-                }
+                prev_page[proc] = page;
+
             }
-            prev_page[proc] = page;
+            timestamps[proc][page] = tick; // Update actively used pages
+            frequency[proc][page] += 1;
             /* Check Page Status and swap in if necessary*/
             if(!q[proc].pages[page]) {
                 if (!pagein(proc,page)) {    
-                    min_time = tick;      
+                    min_freq = ~(-1 << 31);      
                         for(page_iter = 0; page_iter < MAXPROCPAGES; page_iter++){
 
-                            if(q[proc].pages[page_iter] && min_time > timestamps[proc][page_iter]){
+                            if(q[proc].pages[page_iter] && min_freq > timestamps[proc][page_iter]*transition[proc][prev_page[proc]][page_iter]){
                                 swap_page = page_iter;
-                                min_time = timestamps[proc][page_iter];
+                                min_freq = timestamps[proc][page_iter]*transition[proc][prev_page[proc]][page_iter];
                             }
                         }
                     // evict that oldest page.
                     pageout(proc,swap_page);
+
+                }
+            }
+            prev_page[proc] = page;
+        } else {
+            pc = q[proc].pc;
+            page = pc/PAGESIZE;
+            for (page_iter = 0; page_iter < MAXPROCPAGES; page_iter++) {
+                if (q[proc].pages[page_iter]) {
+                    if (page_iter != page && page_iter != page + 1) {
+                        pageout(proc, swap_page);
+                    }
                 }
             }
         }

@@ -1,23 +1,10 @@
-/*
- * File: pager-lru.c
- * Author:       Andy Sayler
- *               http://www.andysayler.com
- * Adopted From: Dr. Alva Couch
- *               http://www.cs.tufts.edu/~couch/
- *
- * Project: CSCI 3753 Programming Assignment 4
- * Create Date: Unknown
- * Modify Date: 2012/04/03
- * Description:
- *  This file contains an lru pageit
- *      implmentation.
- */
-
 #include <stdio.h> 
 #include <stdlib.h>
 
 #include "simulator.h"
 
+
+// Implements the LRU page selection from pager-lru
 int lru_replace(Pentry q[MAXPROCESSES], int timestamps[MAXPROCESSES][MAXPROCPAGES], int tick, int proc) {
     int min_time = tick;  
     int swap_page;    
@@ -31,150 +18,111 @@ int lru_replace(Pentry q[MAXPROCESSES], int timestamps[MAXPROCESSES][MAXPROCPAGE
     return swap_page;
 }
 
-void swap(int *l, int *r){
-    int ptr = *l;
-    *l = *r;
-    *r = ptr;
-}
-
 void pageit(Pentry q[MAXPROCESSES]) { 
-    
-    /* This file contains the stub for a predictive pager */
-    /* You may need to add/remove/modify any part of this file */
 
-    /* static vars */
-    /* givens */
+    /* Static vars */
     static int initialized = 0;
     static int tick = 1; // artificial time
-    /* created */
-    static int prev_pc[MAXPROCESSES]; /* lalst used process process counter */
-    static int timestamps[MAXPROCESSES][MAXPROCPAGES]; /* time stamp for pages and procs */
-    /* use the page timestamps, number, and frequency~ to determine when it should be paged out. */
-    /* use 3d array so each element has something else it is pointing to for another flow patern */
-    static int *CTRL_FLOW_timestamps[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
-    static int flow_page[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
-    static int proc_transitions[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
+    static int timestamps[MAXPROCESSES][MAXPROCPAGES];
+    static int prev_page[MAXPROCESSES];
+    static int encountered[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
+    static int enc_frequency[MAXPROCESSES][MAXPROCPAGES][MAXPROCPAGES];
+
     /* Local vars */
-    /* we were given none :c */
-    /* so like with the 3ed array we need to determine it for bekadys algorithm.*/
-    int **PRED_timestamps;
-    int *PRED_PG_NUM;
-    int *PRED_FREQ;
+    int proc, page, prev, next;
 
-    /* local vars to determine lru and last/current page loc */
-    int proc;
-    int curr_page;
-    int prev_page = 0;
-    int NUM_PG_FILLED;
-    int forw_page;
-    int i, j, k;
+    int i, temp;
 
-    /* like in the lru, initialized the static vars */
-    if(!initialized){
-        /* initialized the cmplx vars */
-        for(i = 0; i < MAXPROCESSES; i++){
-            for(j = 0; j < MAXPROCESSES; j++){
-                for(k = 0; k < MAXPROCESSES; k++){
-                    /* loop through elems in 3D array */
-                    proc_transitions[i][j][k] = -1;
-                    flow_page[i][j][k] = -1;
-                    CTRL_FLOW_timestamps[i][j][k] = NULL;
-                } /* end for */
-            } /* end for */
-        } /* end for */
-        for(proc = 0; proc < MAXPROCESSES; proc++){
-            for(i = 0; i < MAXPROCPAGES; i++){
-                timestamps[proc][i] = 0;
+    /* initialize static vars on first run */
+    if(!initialized) {
+        for(proc=0; proc < MAXPROCESSES; proc++) {
+            for(page=0; page < MAXPROCPAGES; page++) {
+                timestamps[proc][page] = 0;
+                for(i=0;i<MAXPROCPAGES;i++){
+                    encountered[page][proc][i]=-1;
+                    enc_frequency[page][proc][i] = 0;
+                }
             }
         }
-        /* after its finished, its fully initialized */
         initialized = 1;
     }
-    
-    /* TODO: Implement Predictive Paging */
-    /* going to udate the ctrl flow for each process */
-    for(proc = 0; proc < MAXPROCESSES; proc++){
-        if(q[proc].active){
-            prev_page = prev_pc[proc] / PAGESIZE;
-            prev_pc[proc] = q[proc].pc;
-            curr_page = q[proc].pc / PAGESIZE;
 
-            timestamps[proc][curr_page] = tick;
+    // Populate the encountered matrix
+    for(proc=0; proc<MAXPROCESSES; proc++) {
+        if(q[proc].active) {
+            // Save the previous page
+            prev = prev_page[proc];
 
-            if(curr_page != prev_page){
-                pageout(proc, prev_page);
-                /* for throughout the proc last page */
-                for(i = 0; i < MAXPROCPAGES; i ++){
-                    /* the magic of belady */
-                    if(curr_page == flow_page[proc][prev_page][i]){
-                        /* the freq goe up */
-                        proc_transitions[proc][prev_page][i]++;
+            // Update the stored previous
+            prev_page[proc] = q[proc].pc/PAGESIZE;
+
+            // Get current page
+            page = q[proc].pc/PAGESIZE;
+            if(prev != page) {
+                // Remove pages as we leave them
+                pageout(proc, prev);
+
+                for(i=0; i<MAXPROCPAGES; i++) {
+                    //Page has already been encountered
+                    if (encountered[proc][prev][i] == page) {
+                        enc_frequency[proc][prev][i]++;
                         break;
-                    } /* end if */
-                    if(flow_page[proc][prev_page][i] == -1){
-                        proc_transitions[proc][prev_page][i] = 1;
-                        flow_page[proc][prev_page][i] = curr_page;
-                        CTRL_FLOW_timestamps[proc][prev_page][i] = &(timestamps[proc][i]);
+                    } else if((encountered[proc][prev][i] == -1)) {
+                    //Page hasn't yet been encountered on this transition
+                        encountered[proc][prev][i] = page;
+                        enc_frequency[proc][prev][i]++;
                         break;
                     }
                 }
-            }
-        }
-    }
-
-    /* active process page swap */
-    for(proc = 0; proc < MAXPROCESSES; proc++) {
-        
-        if(q[proc].active){
-
-            curr_page = (q[proc].pc) / PAGESIZE;
-            if(!q[proc].pages[curr_page]) {
-                pagein(proc, curr_page);
+                // Sort page hits based on frequency
+                while (i > 0) {
+                    if (enc_frequency[proc][prev][i] > enc_frequency[proc][prev][i - 1]) {
+                        temp = enc_frequency[proc][prev][i - 1];
+                        enc_frequency[proc][prev][i - 1] = enc_frequency[proc][prev][i];
+                        enc_frequency[proc][prev][i] = temp;
+                        temp = encountered[proc][prev][i - 1];
+                        encountered[proc][prev][i - 1] = encountered[proc][prev][i];
+                        encountered[proc][prev][i] = temp;
+                    }
+                    i--;
+                }
             }
         } else {
-            // Get rid of inactive pages
-            for(curr_page = 0; curr_page < MAXPROCPAGES; curr_page++){
-                pageout(proc, curr_page);
+            for (i=0; i<MAXPROCPAGES; i++) {
+                // Pageout inactive processes
+                if (q[proc].pages[i]) pageout(proc, i);
             }
-        }
+        }      
     }
 
-    for(proc = 0; proc < MAXPROCESSES; proc++){
-        if(q[proc].active){
-            /* learning algorithm */
-            NUM_PG_FILLED = 0;
+    // predictively paging in pages based on the matrix built (if it has values for us to use to make predictions)
+    for(proc=0; proc<MAXPROCESSES; proc++){
+        if(q[proc].active) {
+            // This is the page we would be on at the end of a PAGEWAIT (time to swap pages)
+            next = (q[proc].pc + PAGEWAIT + 1)/PAGESIZE;
 
-            // What page will we be on after swap?
-            forw_page = (q[proc].pc + PAGEWAIT + 1) / PAGESIZE;
-
-            PRED_timestamps = CTRL_FLOW_timestamps[proc][forw_page];
-            PRED_FREQ = proc_transitions[proc][forw_page];
-            PRED_PG_NUM = flow_page[proc][forw_page];
-            /* look for empty pages and if not inc the num o filled pages. eleminate seg faults & pg faults */
-            for(i = 0; i < MAXPROCPAGES; i++){
-                if((NUM_PG_FILLED < MAXPROCPAGES) && (PRED_PG_NUM[NUM_PG_FILLED] != -1)){
-                    NUM_PG_FILLED++;
+            for(i=0;i<MAXPROCPAGES;i++) {
+                if(encountered[proc][next][i]==-1) {
+                    // No more pages likely to be needed
+                    break;
+                } else {
+                    // Pagein the most pages that have occured after this one previously (prioritizing the most frequent)
+                    pagein(proc, encountered[proc][next][i]);
                 }
             }
-            /* go until the t is less than tehe cur t, swhap bc beladys */
-            for(i = 0; i < MAXPROCPAGES; i++){
-                for(j = 1; j < NUM_PG_FILLED; j++){
-                    if((*PRED_timestamps[j]) > (*PRED_timestamps[j - 1])){
-                        if((PRED_FREQ[j]) > (PRED_FREQ[j - 1])){
-                            swap(PRED_PG_NUM + (j - 1), PRED_PG_NUM + j);
-                            swap(*PRED_timestamps + (j - 1), *PRED_timestamps + j);
-                            swap(PRED_FREQ + (j - 1), PRED_FREQ + j);
-                        }
-                    }
-                }
-            }
-            /* its all sorted ptimally so we swap in*/
-            for(i = 0; i < NUM_PG_FILLED; i++){
-                pagein(proc, PRED_PG_NUM[i]);
-            }
-        }
+        }        
     }
 
-
+    // LAST CASE SCENARIO use lru to get a page in that is currently needed.
+    for(proc = 0; proc < MAXPROCESSES; proc++) {
+        if(q[proc].active) {
+            page = q[proc].pc/PAGESIZE;  
+            if(!q[proc].pages[page] && !pagein(proc, page)) { 
+                pageout(proc, lru_replace(q, timestamps, tick, proc));
+            }
+            timestamps[proc][page] = tick;
+        }
+    }
     tick++;
 }
+

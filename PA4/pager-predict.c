@@ -31,7 +31,7 @@ void pageit(Pentry q[MAXPROCESSES]) {
     /* Local vars */
     int proc, page, prev, next;
 
-    int i, temp;
+    int i, j, temp;
 
     /* initialize static vars on first run */
     if(!initialized) {
@@ -61,6 +61,21 @@ void pageit(Pentry q[MAXPROCESSES]) {
             if(prev != page) {
                 // Remove pages as we leave them
                 pageout(proc, prev);
+
+                // Tried implementing predictive page outs but that didnt work at all
+                // for (i = 0; i < MAXPROCPAGES; i++) {
+                //     if (q[proc].pages[encountered[proc][prev][i]]) {
+                //         temp =0;
+                //         for (j = 0; j < MAXPROCPAGES; j++) {
+                //             if (encountered[proc][prev][i] == encountered[proc][page][j]) {
+                //                 temp = 1;
+                //             }
+                //         }
+                //         if (!temp) {
+                //             pageout(proc, encountered[proc][prev][i]);
+                //         }
+                //     }
+                // }
 
                 for(i=0; i<MAXPROCPAGES; i++) {
                     //Page has already been encountered
